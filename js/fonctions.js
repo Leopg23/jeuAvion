@@ -3,19 +3,19 @@
 function deplacerAvion(){
         //- À compléter - Calculer les futures positions de la sorciere
         if (droite) {
-            avion.x += 7;
+            avion.x += avion.vitesse;
         }
 
         if (gauche) {
-            avion.x -= 7;
+            avion.x -= avion.vitesse;
         }
 
         if (haut) {
-            avion.y -= 7;
+            avion.y -= avion.vitesse;
         }
 
         if (bas) {
-            avion.y += 7;
+            avion.y += avion.vitesse;
         }
         // si l'avion sortirai des limites du canvas
         //limite droite
@@ -40,8 +40,19 @@ function deplacerAvion(){
 }
 
 function deplacerOiseau(){
-
+    oiseau.x -= oiseau.vitesse;
+    
+    
+    
+    if(oiseau.x < -oiseau.largeur){
+        oiseau.x = leCanvas.width;
+        oiseau.y = Math.random() * (leCanvas.height-oiseau.hauteur);
+        oiseau.img.src = "images/oiseau" + Number(Math.ceil(3*Math.random())) + ".png";
+    }
+    ctx.drawImage(oiseau.img, oiseau.x, oiseau.y)
 }
+
+
 
 function deplacerCiel(){
     //le ciel ce deplace a la vitesse exacte ou ca lui prendra 3 minutes avant d'arriver au bout de l'image
@@ -114,12 +125,25 @@ function dessinerLeTimer(){
     let y = 100;
 
     //Dessin du texte
-    if(timer >= 10){
-    ctx.fillText(minute + ":" + timer, x, y);
+    if(seconde >= 10){
+    ctx.fillText(minute + ":" + seconde, x, y);
     }
     //pour avoir l'autre 0 si les secondes sont a moins que 10 (2:01 a la place de 2:1)
-    if(timer < 10){
-        ctx.fillText(minute + ":0" + timer,x,y)
+    if(seconde < 10){
+        ctx.fillText(minute + ":0" + seconde,x,y)
     }
     
+}
+
+function detecterCollision(rectangle1, rectangle2) {
+    if (
+        rectangle1.x < rectangle2.x + rectangle2.largeur &&
+        rectangle1.x + rectangle1.largeur > rectangle2.x &&
+        rectangle1.y < rectangle2.y + rectangle2.hauteur &&
+        rectangle1.y + rectangle1.hauteur > rectangle2.y
+    ) {
+        return true;
+    } else {
+        return false;
+    }
 }
