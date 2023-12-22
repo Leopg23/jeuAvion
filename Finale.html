@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="utf-8" />
+        <title>Contrôler le déplacement ou non de la sorcière avec les touches du clavier</title>
+
+        <style>
+            canvas {
+                border: 1px solid black;
+                cursor: pointer;
+            }
+        </style>
+        <script type="text/javascript" src="js/fonctions.js"></script>
+        <script type="text/javascript" src="js/objets.js"></script>
+    </head>
+
+    <body>
+        <!-- Créer la balise canvas et modifier ensuite ses dimensions -->
+        <canvas width="960" height="600"></canvas>
+        <script>
+            //Récupérer la balise canvas et définir son contexte de dessin en 2d
+            let leCanvas = document.querySelector("canvas");
+            let ctx = leCanvas.getContext("2d");
+            
+            leCanvas.style.backgroundImage =  "url('images/debut.png')";
+
+            //charger l'image de l'avion
+            avion.img.src = avion.urlImage;
+            avion.y = leCanvas.height/2 - avion.hauteur/2;
+            avion.x = leCanvas.width/2 - avion.largeur/2;
+
+            //charger l'image du ciel
+            ciel.img.src = ciel.urlImage;
+
+            //charger l'image des oiseaux
+            //oiseau 1
+            oiseau1.img.src = oiseau1.urlImage;
+            oiseau1.x = leCanvas.width;
+            oiseau1.y = Math.random() * (leCanvas.height-oiseau1.hauteur);
+
+            //oiseau 2
+            oiseau2.img.src = oiseau2.urlImage;
+            oiseau2.x = leCanvas.width;
+            oiseau2.y = Math.random() * (leCanvas.height-oiseau2.hauteur);
+
+            //charger l'images des vies
+            vie.img.src = vie.urlImage;
+            vie.x = leCanvas.width;
+            vie.y = Math.random() * (leCanvas.height-vie.hauteur);
+
+            //charger l'image du feu
+            feu.img.src = feu.urlImage;
+            feu.x = avion.x + 200;
+            feu.y = leCanvas.height - feu.hauteur;
+            //Les intervalles du jeu
+            let intervalID;
+            let intervalFinJeuID;
+            let intervalTimerID;
+            //Les addEventListener
+            //pour savoir quand le joueur enfonce et relache les touches de mouvements
+            document.addEventListener("keyup", relacherTouche);
+            document.addEventListener("keydown",presserTouche);
+            //pour commencer le jeu
+            document.addEventListener("click",debuterJeu,{once:true})
+            document.addEventListener("click", recommancerJeu);
+            
+            function debuterJeu(){
+            //L'interval du jeu a 60 fps
+            intervalID = setInterval(actualiserJeu, 1000 / 60);
+            //l'interval a 1 fps pour les fonctions qui en on besoina
+            intervalTimerID = setInterval(actualiserleTimer,1000);
+            //la musique qui va continuer meme apres la fin du jeu
+            backgroundMusic.play();
+            }
+            
+            function actualiserleTimer(){
+                leTimer();
+
+                //gerer la vitesse des oiseaux
+                vitesseOiseau(oiseau1,oiseau2);
+            }
+
+
+            function actualiserJeu() {
+                //Effacer le contenu actuel du contexte de rendu du canvas
+                ctx.clearRect(0, 0, leCanvas.width, leCanvas.height);
+
+                //deplacer le ciel
+                deplacerCiel();
+
+                //Déplacer l'avion  
+                deplacerAvion();
+
+                //Deplacer les oiseauxc
+                deplacerOiseau(oiseau1);
+
+                if(minute <= 3){
+                    deplacerOiseau(oiseau2)
+                }
+                
+                //Deplacer les vies
+                deplacerVie();
+                //fonction pour le timer
+                dessinerLeTimer();
+                //fonction pour le compteur de vie
+                dessinerLeCompteurDeVie();
+                //detecter la collision entre l'avion et les vies 
+                let collisionAvionVie = detecterCollision(avion,vie);
+
+                //rajouter une vie
+                if(collisionAvionVie){
+                    // on sort l'objet du canvas
+                    vie.x = -vie.largeur
+                    //on rajoute les vies
+                    nombreDeVies += 1;
+                    //on fait jouer le son
+                    sonVie.play();
+                }
+                
+                //partie pour la collision entre l'avion et n'importe quel des oiseaux
+                let collisionOiseau1 = detecterCollision(avion,oiseau1); 
+                let collisionOiseau2 = detecterCollision(avion,oiseau2); 
+
+                if (collisionOiseau1 || collisionOiseau2) {
+                    //On enleve une vie
+                    nombreDeVies -= 1;
+                    //On jou le son
+                    sonCollision.play();
+                    //On remet l'oiseau qui l'a toucher un peut plus loin pour laisser du temps au joueurs
+                    if(collisionOiseau1){
+                        oiseau1.x = 2*leCanvas.width;
+                    }
+
+                    if(collisionOiseau2){
+                        oiseau2.x = 2*leCanvas.width;
+                    }           
+                }
+                
+                //si le nombre de vies tombe a 0
+                if(nombreDeVies <= 0){
+                    clearInterval(intervalID);
+
+                    //partir l'animation de la fin du jeu
+                    animerFinJeu()
+
+                    //On enleve la musique de background
+                    backgroundMusic.pause();
+                    
+                    //On met le son game over
+                    sonPerd.play();  
+
+                    //partir l'animation de la fin a une frequence de 5 fps
+                    intervalFinJeuID = setInterval(animerFinJeu,1000/5);
+
+                }
+
+                //pour savoir si le joueur a gagner la partie
+                if(seconde == 0 && minute == 0){
+                    timerFini = true;
+
+                    clearInterval(intervalID)
+
+                    //on dessine l'image de la fin du jeu
+                    ctx.drawImage(imgGagneJeu, 0, 0, leCanvas.width, leCanvas.height)
+
+                }
+            }
+            
+
+            //*********Ces fonctions devaient etre dans le html ***********************************************//
+            function leTimer() {
+                //diminuer le timer de 1 seconde si le compteur n'est pas a 0
+                if (!timerFini){
+                    seconde -= 1;
+                }
+                
+                // si les secondes sont a 0 mais les minutes ne le sont pas remetre les secondes a 59 et diminuer les minute de 1
+                if(seconde < 0 && minute != 0 && seconde !=0){
+                    seconde = 59;
+                    minute -= 1;
+                }
+                
+                // si le compteur est a 0 ne pas le diminuer
+                else if(minute <= 0 && seconde <= 0){
+                    secondeFini = true
+                    //fin du jeu
+                }
+            }
+            
+            function vitesseOiseau(oiseau1, oiseau2){
+                console.log("vitesse oiseau " + oiseau1.vitesse)
+                if(seconde == 30 || seconde == 0){
+                    oiseau1.vitesse += 3;
+                    oiseau2.vitesse += 3;
+                    ciel.vitesse += 0.25
+                }
+            }
+
+            function recommancerJeu(){
+                if (nombreDeVies == 0){
+                    document.location.reload();
+                }
+            }
+
+            function animerFinJeu(){
+                // effacer le contenu du canvas
+                ctx.clearRect(0, 0, leCanvas.width, leCanvas.height)
+
+                //dessiner l'arriere plan
+                ctx.drawImage(imgPerdJeu, 0, 0);
+
+                //dessiner l'avion a cote du feu
+                ctx.drawImage(avion.img, avion.x, leCanvas.height - avion.hauteur)
+                //animer le feu ou l'avion c'est ecrase
+                ctx.drawImage(feu.img, feu.sourceX, 0, feu.largeur, feu.hauteur, feu.x, feu.y, feu.largeur, feu.hauteur);
+
+                feu.sourceX = feu.indexVignette * feu.largeur;
+
+                //Incrémenter et gérer l’index de la prochaine vignette à afficher
+                feu.indexVignette += 1;
+
+                if (feu.indexVignette == feu.nbVignettes) {
+                    feu.indexVignette = 0;
+                }
+            }
+            
+        </script>
+    </body>
+</html>

@@ -36,32 +36,45 @@ function deplacerAvion(){
         }
         
         //dessiner l'avion
-        ctx.drawImage(avion.img, avion.x, avion.y);
+        ctx.drawImage(avion.img, avion.x, avion.y);    
 }
 
-function deplacerOiseau(){
-    oiseau.x -= oiseau.vitesse;
+
+
+function deplacerOiseau(unOiseau){
+    unOiseau.x -= unOiseau.vitesse;
+        if(unOiseau.x < -unOiseau.largeur){
+
+            
+            unOiseau.x = leCanvas.width;
+            unOiseau.y = Math.random() * (leCanvas.height-unOiseau.hauteur);
+            unOiseau.img.src = "images/oiseau" + Number(Math.ceil(3*Math.random())) + ".png";
+        }
+        ctx.drawImage(unOiseau.img, unOiseau.x, unOiseau.y)
     
-    
-    
-    if(oiseau.x < -oiseau.largeur){
-        oiseau.x = leCanvas.width;
-        oiseau.y = Math.random() * (leCanvas.height-oiseau.hauteur);
-        oiseau.img.src = "images/oiseau" + Number(Math.ceil(3*Math.random())) + ".png";
+}
+
+function deplacerVie(){
+    vie.x -= vie.vitesse;
+    //a chaque 15 secondes une nouvelle vie apparait
+    if(seconde == 0 || seconde == 15 || seconde == 30 || seconde == 45){
+
+        vie.vitesse = 10;
+        vie.x = leCanvas.width;
+        vie.y = Math.random() * (leCanvas.height-vie.hauteur);
     }
-    ctx.drawImage(oiseau.img, oiseau.x, oiseau.y)
+    ctx.drawImage(vie.img, vie.x, vie.y)
 }
-
-
 
 function deplacerCiel(){
     //le ciel ce deplace a la vitesse exacte ou ca lui prendra 3 minutes avant d'arriver au bout de l'image
-    ciel.x -= 28/60;
+    ciel.x -= ciel.vitesse;
 
     
     ctx.drawImage(ciel.img, ciel.x, ciel.y);
     
 }
+
 
 function presserTouche(event) {
     console.log("presserTouche", event.keyCode);
@@ -135,7 +148,19 @@ function dessinerLeTimer(){
     
 }
 
+function dessinerLeCompteurDeVie(){
+    ctx.font = "italic 50px Arial";
+    ctx.textBaseline = "bottom";
+    ctx.fillStyle = "#000000";
+    ctx.textAlign = "center";
+    let x = leCanvas.width - 90;
+    let y = 100;
+    
+    ctx.fillText(nombreDeVies +"\u2764\uFE0F",x,y)
+}
+
 function detecterCollision(rectangle1, rectangle2) {
+
     if (
         rectangle1.x < rectangle2.x + rectangle2.largeur &&
         rectangle1.x + rectangle1.largeur > rectangle2.x &&
@@ -147,3 +172,4 @@ function detecterCollision(rectangle1, rectangle2) {
         return false;
     }
 }
+
