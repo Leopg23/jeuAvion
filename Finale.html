@@ -160,6 +160,9 @@
 
                     clearInterval(intervalID)
 
+                    // effacer le contenu du canvas
+                    ctx.clearRect(0, 0, leCanvas.width, leCanvas.height)
+                    
                     //on dessine l'image de la fin du jeu
                     ctx.drawImage(imgGagneJeu, 0, 0, leCanvas.width, leCanvas.height)
 
@@ -175,7 +178,7 @@
                 }
                 
                 // si les secondes sont a 0 mais les minutes ne le sont pas remetre les secondes a 59 et diminuer les minute de 1
-                if(seconde < 0 && minute != 0 && seconde !=0){
+                if(seconde < 0 && minute != 0 && seconde != 0){
                     seconde = 59;
                     minute -= 1;
                 }
@@ -197,7 +200,7 @@
             }
 
             function recommancerJeu(){
-                if (nombreDeVies == 0){
+                if (nombreDeVies == 0 || timerFini){
                     document.location.reload();
                 }
             }
@@ -211,6 +214,7 @@
 
                 //dessiner l'avion a cote du feu
                 ctx.drawImage(avion.img, avion.x, leCanvas.height - avion.hauteur)
+
                 //animer le feu ou l'avion c'est ecrase
                 ctx.drawImage(feu.img, feu.sourceX, 0, feu.largeur, feu.hauteur, avion.x, feu.y, feu.largeur, feu.hauteur);
 
