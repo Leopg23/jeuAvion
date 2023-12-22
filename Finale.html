@@ -50,7 +50,7 @@
 
             //charger l'image du feu
             feu.img.src = feu.urlImage;
-            feu.x = avion.x + 200;
+            feu.x = avion.x;
             feu.y = leCanvas.height - feu.hauteur;
             //Les intervalles du jeu
             let intervalID;
@@ -212,7 +212,7 @@
                 //dessiner l'avion a cote du feu
                 ctx.drawImage(avion.img, avion.x, leCanvas.height - avion.hauteur)
                 //animer le feu ou l'avion c'est ecrase
-                ctx.drawImage(feu.img, feu.sourceX, 0, feu.largeur, feu.hauteur, feu.x, feu.y, feu.largeur, feu.hauteur);
+                ctx.drawImage(feu.img, feu.sourceX, 0, feu.largeur, feu.hauteur, avion.x, feu.y, feu.largeur, feu.hauteur);
 
                 feu.sourceX = feu.indexVignette * feu.largeur;
 
